@@ -36,6 +36,19 @@ make
 ```
 build目录下就会生成一个`CADEulerOperation`可执行文件，运行即可。
 
+## 使用方法
+`CADEulerOperation`可以接受命令行参数，默认不输入则显示`CAD`字符，预设参数分别为：
+- 1 方块
+- 2 两个通孔
+- 3 `CAD`字符
+
+如:
+```shell script
+./CADEulerOperation 2     # 显示两个通孔
+```
+
+操作时使用键盘上下左右键来控制视角，按住esc键即可退出
+
 ## 运行效果图
 ![Block](docs/block.gif)
 

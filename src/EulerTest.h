@@ -229,99 +229,136 @@ solid_ptr create_D(const vec3 &offset = vec3(0, 0, 0), float scalar = 1) {
 solid_ptr create_two_hole() {
     double height = 4;
     solid_ptr solid;
+    vec3 p[16] = {
+            vec3(-4.0, 0, 4.0),
+            vec3(4.0, 0, 4.0),
+            vec3(-4.0, 0, -4.0),
+            vec3(4.0, 0, -4.0),
+            vec3(-4.0, height, 4.0),
+            vec3(4.0, height, 4.0),
+            vec3(-4.0, height, -4.0),
+            vec3(4.0, height, -4.0),
+            vec3(-3, 0, 3),
+            vec3(-1, 0, 3),
+            vec3(-1, 0, 1),
+            vec3(-3, 0, 1),
+            vec3(-3, height, 3),
+            vec3(-1, height, 3),
+            vec3(-3, height, 1),
+            vec3(-1, height, 1)
+    };
 
-    vertex_ptr topUpperLeft;
-    solid = EulerOp::mvfs(topUpperLeft, vec3(-4.0, 0, 4.0));
-    loop_ptr topLoop = solid->s_faces->f_loop;
-    halfedge_ptr topUpperHalfEdge = EulerOp::mev(topUpperLeft, vec3(4.0, 0, 4.0), topLoop);
-    vertex_ptr topUpperRight = topUpperHalfEdge->couple->start_v;
-    halfedge_ptr topLeftHalfEdge = EulerOp::mev(topUpperLeft, vec3(-4.0, 0, -4.0), topLoop);
-    vertex_ptr topBottomLeft = topLeftHalfEdge->couple->start_v;
-    halfedge_ptr topRightHalfEdge = EulerOp::mev(topUpperRight, vec3(4.0, 0, -4.0), topLoop);
-    vertex_ptr topBottomRight = topRightHalfEdge->couple->start_v;
-    // Make top ring
-    loop_ptr downLoop = EulerOp::mef(topBottomLeft, topBottomRight, topLoop);
+    vertex_ptr v[24];
 
-    halfedge_ptr upperLeftHalfEdge = EulerOp::mev(topUpperLeft, vec3(-4.0, height, 4.0), downLoop);
-    vertex_ptr downUpperLeft = upperLeftHalfEdge->couple->start_v;
-    halfedge_ptr upperRightHalfEdge = EulerOp::mev(topUpperRight, vec3(4.0, height, 4.0), downLoop);
-    vertex_ptr downUpperRight = upperRightHalfEdge->couple->start_v;
-    halfedge_ptr bottomLeftHalfEdge = EulerOp::mev(topBottomLeft, vec3(-4.0, height, -4.0), downLoop);
-    vertex_ptr downBottomLeft = bottomLeftHalfEdge->couple->start_v;
-    halfedge_ptr bottomRightHalfEdge = EulerOp::mev(topBottomRight, vec3(4.0, height, -4.0), downLoop);
-    vertex_ptr downBottomRight = bottomRightHalfEdge->couple->start_v;
+    /**
+     * ************* outer
+     */
+    solid = EulerOp::mvfs(v[0], p[0]);
+    loop_ptr loop_top = solid->s_faces->f_loop;
+    halfedge_ptr h1 = EulerOp::mev(v[0], p[1], loop_top);
+    v[1] = h1->couple->start_v;
+    halfedge_ptr h2 = EulerOp::mev(v[0], p[2], loop_top);
+    v[2] = h2->couple->start_v;
+    halfedge_ptr h3 = EulerOp::mev(v[1], p[3], loop_top);
+    v[3] = h3->couple->start_v;
 
-    loop_ptr upperLoop = EulerOp::mef(downUpperLeft, downUpperRight, downLoop);
-    loop_ptr rightLoop = EulerOp::mef(downUpperRight, downBottomRight, downLoop);
-    loop_ptr bottomLoop = EulerOp::mef(downBottomRight, downBottomLeft, downLoop);
-    loop_ptr leftLoop = EulerOp::mef(downBottomLeft, downUpperLeft, downLoop);
+    loop_ptr loop_bottom = EulerOp::mef(v[2], v[3], loop_top);
 
-    // Top inner ring
+    halfedge_ptr h4 = EulerOp::mev(v[0], p[4], loop_bottom);
+    v[4] = h4->couple->start_v;
+    halfedge_ptr h5 = EulerOp::mev(v[1], p[5], loop_bottom);
+    v[5] = h5->couple->start_v;
+    halfedge_ptr h6 = EulerOp::mev(v[2], p[6], loop_bottom);
+    v[6] = h6->couple->start_v;
+    halfedge_ptr h7 = EulerOp::mev(v[3], p[7], loop_bottom);
+    v[7] = h7->couple->start_v;
 
-    halfedge_ptr topBridge = EulerOp::mev(topUpperLeft, vec3(-3, 0, 3), topLoop);
-    vertex_ptr topInnerUpperLeft = topBridge->couple->start_v;
+    EulerOp::mef(v[4], v[5], loop_bottom);
+    EulerOp::mef(v[5], v[7], loop_bottom);
+    EulerOp::mef(v[7], v[6], loop_bottom);
+    EulerOp::mef(v[6], v[4], loop_bottom);
 
-    halfedge_ptr topInnerUpperHalfEdge = EulerOp::mev(topInnerUpperLeft, vec3(-1, 0, 3), topLoop);
-    vertex_ptr topInnerUpperRight = topInnerUpperHalfEdge->couple->start_v;
-    halfedge_ptr topInnerRightHalfEdge = EulerOp::mev(topInnerUpperRight, vec3(-1, 0, 1), topLoop);
-    vertex_ptr topInnerBottomRight = topInnerRightHalfEdge->couple->start_v;
-    halfedge_ptr topInnerLeftHalfEdge = EulerOp::mev(topInnerUpperLeft, vec3(-3, 0, 1), topLoop);
-    vertex_ptr topInnerBottomLeft = topInnerLeftHalfEdge->couple->start_v;
-    loop_ptr downInnerLoop = EulerOp::mef(topInnerBottomLeft, topInnerBottomRight, topLoop);
+    /**
+     * ************* outer
+     */
 
-    loop_ptr topInnerLoop = EulerOp::kemr(topBridge->edge, topLoop);
+    /**
+     * ************* inner 1
+     */
 
-    halfedge_ptr upperLeftInnerHalfEdge = EulerOp::mev(topInnerUpperLeft, vec3(-3, height, 3), downInnerLoop);
-    vertex_ptr downInnerUpperLeft = upperLeftInnerHalfEdge->couple->start_v;
-    halfedge_ptr upperRightInnerHalfEdge = EulerOp::mev(topInnerUpperRight, vec3(-1, height, 3), downInnerLoop);
-    vertex_ptr downInnerUpperRight = upperRightInnerHalfEdge->couple->start_v;
-    halfedge_ptr bottomLeftInnerHalfEdge = EulerOp::mev(topInnerBottomLeft, vec3(-3, height, 1), downInnerLoop);
-    vertex_ptr downInnerBottomLeft = bottomLeftInnerHalfEdge->couple->start_v;
-    halfedge_ptr bottomRightInnerHalfEdge = EulerOp::mev(topInnerBottomRight, vec3(-1, height, 1), downInnerLoop);
-    vertex_ptr downInnerBottomRight = bottomRightInnerHalfEdge->couple->start_v;
+    halfedge_ptr h_connect_1 = EulerOp::mev(v[0], p[8], loop_top);
+    v[8] = h_connect_1->couple->start_v;
 
-    loop_ptr upperInnerLoop = EulerOp::mef(downInnerUpperLeft, downInnerUpperRight, downInnerLoop);
-    loop_ptr rightInnerLoop = EulerOp::mef(downInnerUpperRight, downInnerBottomRight, downInnerLoop);
-    loop_ptr bottomInnerLoop = EulerOp::mef(downInnerBottomRight, downInnerBottomLeft, downInnerLoop);
-    loop_ptr leftInnerLoop = EulerOp::mef(downInnerBottomLeft, downInnerUpperLeft, downInnerLoop);
+    halfedge_ptr h8 = EulerOp::mev(v[8], p[9], loop_top);
+    v[9] = h8->couple->start_v;
+    halfedge_ptr h9 = EulerOp::mev(v[9], p[10], loop_top);
+    v[10] = h9->couple->start_v;
+    halfedge_ptr h10 = EulerOp::mev(v[8], p[11], loop_top);
+    v[11] = h10->couple->start_v;
 
-    EulerOp::kfmrh(downLoop, downInnerLoop);
+    loop_ptr loop_inner_bottom = EulerOp::mef(v[11], v[10], loop_top);
 
-    topInnerLoop->inner = true;
-    downInnerLoop->inner = true;
+    loop_ptr loop_inner_top = EulerOp::kemr(h_connect_1->edge, loop_top);
 
-    halfedge_ptr topBridge2 = EulerOp::mev(topUpperLeft, vec3(1, 0, -1), topLoop);
-    vertex_ptr topInnerUpperLeft2 = topBridge2->couple->start_v;
+    halfedge_ptr h11 = EulerOp::mev(v[8], p[12], loop_inner_bottom);
+    v[12] = h11->couple->start_v;
+    halfedge_ptr h12 = EulerOp::mev(v[9], p[13], loop_inner_bottom);
+    v[13] = h12->couple->start_v;
+    halfedge_ptr h13 = EulerOp::mev(v[11], p[14], loop_inner_bottom);
+    v[14] = h13->couple->start_v;
+    halfedge_ptr h14 = EulerOp::mev(v[10], p[15], loop_inner_bottom);
+    v[15] = h14->couple->start_v;
 
-    halfedge_ptr topInnerUpperHalfEdge2 = EulerOp::mev(topInnerUpperLeft2, vec3(3, 0, -1), topLoop);
-    vertex_ptr topInnerUpperRight2 = topInnerUpperHalfEdge2->couple->start_v;
-    halfedge_ptr topInnerRightHalfEdge2 = EulerOp::mev(topInnerUpperRight2, vec3(3, 0, -3), topLoop);
-    vertex_ptr topInnerBottomRight2 = topInnerRightHalfEdge2->couple->start_v;
-    halfedge_ptr topInnerLeftHalfEdge2 = EulerOp::mev(topInnerUpperLeft2, vec3(1, 0, -3), topLoop);
-    vertex_ptr topInnerBottomLeft2 = topInnerLeftHalfEdge2->couple->start_v;
-    loop_ptr downInnerLoop2 = EulerOp::mef(topInnerBottomLeft2, topInnerBottomRight2, topLoop);
+    EulerOp::mef(v[12], v[13], loop_inner_bottom);
+    EulerOp::mef(v[13], v[15], loop_inner_bottom);
+    EulerOp::mef(v[15], v[14], loop_inner_bottom);
+    EulerOp::mef(v[14], v[12], loop_inner_bottom);
+    EulerOp::kfmrh(loop_bottom, loop_inner_bottom);
+    loop_inner_top->inner = true;
+    loop_inner_bottom->inner = true;
 
-    loop_ptr topInnerLoop2 = EulerOp::kemr(topBridge2->edge, topLoop);
+    /**
+    * ************* inner 1
+    */
 
-    halfedge_ptr upperLeftInnerHalfEdge2 = EulerOp::mev(topInnerUpperLeft2, vec3(1, height, -1), downInnerLoop2);
-    vertex_ptr downInnerUpperLeft2 = upperLeftInnerHalfEdge2->couple->start_v;
-    halfedge_ptr upperRightInnerHalfEdge2 = EulerOp::mev(topInnerUpperRight2, vec3(3, height, -1), downInnerLoop2);
-    vertex_ptr downInnerUpperRight2 = upperRightInnerHalfEdge2->couple->start_v;
-    halfedge_ptr bottomLeftInnerHalfEdge2 = EulerOp::mev(topInnerBottomLeft2, vec3(1, height, -3), downInnerLoop2);
-    vertex_ptr downInnerBottomLeft2 = bottomLeftInnerHalfEdge2->couple->start_v;
-    halfedge_ptr bottomRightInnerHalfEdge2 = EulerOp::mev(topInnerBottomRight2, vec3(3, height, -3), downInnerLoop2);
-    vertex_ptr downInnerBottomRight2 = bottomRightInnerHalfEdge2->couple->start_v;
+    /**
+    * ************* inner 2
+    */
 
-    loop_ptr upperInnerLoop2 = EulerOp::mef(downInnerUpperLeft2, downInnerUpperRight2, downInnerLoop2);
-    loop_ptr rightInnerLoop2 = EulerOp::mef(downInnerUpperRight2, downInnerBottomRight2, downInnerLoop2);
-    loop_ptr bottomInnerLoop2 = EulerOp::mef(downInnerBottomRight2, downInnerBottomLeft2, downInnerLoop2);
-    loop_ptr leftInnerLoop2 = EulerOp::mef(downInnerBottomLeft2, downInnerUpperLeft2, downInnerLoop2);
+    halfedge_ptr h15 = EulerOp::mev(v[0], vec3(1, 0, -1), loop_top);
+    v[16] = h15->couple->start_v;
+    halfedge_ptr h16 = EulerOp::mev(v[16], vec3(3, 0, -1), loop_top);
+    v[17] = h16->couple->start_v;
+    halfedge_ptr h17 = EulerOp::mev(v[17], vec3(3, 0, -3), loop_top);
+    v[18] = h17->couple->start_v;
+    halfedge_ptr h18 = EulerOp::mev(v[16], vec3(1, 0, -3), loop_top);
+    v[19] = h18->couple->start_v;
 
-    EulerOp::kfmrh(downInnerLoop2, downLoop);
+    loop_ptr loop_inner_bottom_2 = EulerOp::mef(v[19], v[18], loop_top);
+    loop_ptr loop_inner_top_2 = EulerOp::kemr(h15->edge, loop_top);
 
-    topInnerLoop2->inner = true;
-    downInnerLoop2->inner = true;
+    halfedge_ptr h19 = EulerOp::mev(v[16], vec3(1, height, -1), loop_inner_bottom_2);
+    v[20] = h19->couple->start_v;
+    halfedge_ptr h20 = EulerOp::mev(v[17], vec3(3, height, -1), loop_inner_bottom_2);
+    v[21] = h20->couple->start_v;
+    halfedge_ptr h21 = EulerOp::mev(v[19], vec3(1, height, -3), loop_inner_bottom_2);
+    v[22] = h21->couple->start_v;
+    halfedge_ptr h22 = EulerOp::mev(v[18], vec3(3, height, -3), loop_inner_bottom_2);
+    v[23] = h22->couple->start_v;
 
+    EulerOp::mef(v[20], v[21], loop_inner_bottom_2);
+    EulerOp::mef(v[21], v[23], loop_inner_bottom_2);
+    EulerOp::mef(v[23], v[22], loop_inner_bottom_2);
+    EulerOp::mef(v[22], v[20], loop_inner_bottom_2);
+
+    EulerOp::kfmrh(loop_inner_bottom_2, loop_bottom);
+
+    loop_inner_top_2->inner = true;
+    loop_inner_bottom_2->inner = true;
+
+    /**
+    * ************* inner 2
+    */
     return solid;
 }
 
