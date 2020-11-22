@@ -47,7 +47,7 @@ build目录下就会生成一个`CADEulerOperation`可执行文件，运行即�
 ./CADEulerOperation 2     # 显示两个通孔
 ```
 
-操作时使用键盘上下左右键来控制视角，按住esc键即可退出
+操作时使用键盘上下左右键来控制视角，按住esc键即可退出，按w显示线框图，按s显示模型图
 
 ## 运行效果图
 ![Block](docs/block.gif)
